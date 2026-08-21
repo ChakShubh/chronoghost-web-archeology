@@ -1,4 +1,12 @@
-// index.mjs (AWS Lambda Handler)
+// index.mjs (AWS Lambda Handler with DynamoDB Persistence)
+
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+
+const ddbClient = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(ddbClient);
+const TABLE_NAME = "ChronoGhostArtifacts";
+
 export const handler = async (event) => {
   // Only set Content-Type; AWS Lambda Function URL handles CORS headers automatically
   const responseHeaders = {
@@ -77,6 +85,27 @@ export const handler = async (event) => {
     // Telemetry calculations (56 kbps = 7 KB/s)
     const dialup56kSec = (rawSizeBytes / (7 * 1024)).toFixed(2);
     const clean56kSec = (cleanSizeBytes / (7 * 1024)).toFixed(2);
+    const timestamp = Date.now();
+
+    // Persist snapshot record to Amazon DynamoDB
+    let dbPersisted = false;
+    try {
+      await docClient.send(new PutCommand({
+        TableName: TABLE_NAME,
+        Item: {
+          url: targetUrl,
+          timestamp: timestamp,
+          title: pageTitle,
+          rawSizeKb: (rawSizeBytes / 1024).toFixed(1),
+          cleanSizeKb: (cleanSizeBytes / 1024).toFixed(1),
+          weightReductionPercent: weightReductionPercent,
+          modernLatencyMs: modernLatencyMs
+        }
+      }));
+      dbPersisted = true;
+    } catch (dbError) {
+      console.warn("DynamoDB save skipped/failed:", dbError.message);
+    }
 
     return {
       statusCode: 200,
@@ -91,7 +120,8 @@ export const handler = async (event) => {
           weightReductionPercent,
           modernLatencyMs,
           dialup56kSec,
-          clean56kSec
+          clean56kSec,
+          persistedToDynamoDB: dbPersisted
         }
       })
     };
