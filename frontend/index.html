@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronoGhost - CSS Web Archeology</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        crtGreen: '#00ff66',
+                        crtDark: '#0a0f0d',
+                        crtAmber: '#ffb000',
+                        winBg: '#008080',
+                        winGray: '#c0c0c0',
+                        winDark: '#808080',
+                        winNavy: '#000080'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body
+    class="font-mono transition-colors duration-150 min-h-screen p-3 md:p-6 bg-winBg dark:bg-black text-gray-900 dark:text-crtGreen">
+
+    <div class="max-w-4xl mx-auto space-y-4">
+
+        <!-- Top System Bar -->
+        <header
+            class="win95-box dark:border-2 dark:border-crtGreen p-3 bg-winGray dark:bg-crtDark flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">🏺</span>
+                <div>
+                    <h1 class="font-bold text-base md:text-lg tracking-wider text-black dark:text-crtGreen">
+                        CHRONOGHOST.EXE</h1>
+                    <p class="text-xs text-gray-700 dark:text-green-400">AWS Full-Stack Archeology Engine [Prompt:
+                        ARTIFACT]</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="audioToggle"
+                    class="px-2 py-1 text-xs border border-black dark:border-crtGreen bg-winGray dark:bg-black hover:bg-gray-300 dark:hover:bg-green-950 font-bold">
+                    🔊 Sound: ON
+                </button>
+                <button id="themeToggle"
+                    class="px-3 py-1 text-xs border-2 border-black dark:border-crtGreen bg-winGray dark:bg-green-950 font-bold hover:invert">
+                    🌞 Win95 / 🌚 CRT
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Controller Deck -->
+        <section class="win95-box dark:border-2 dark:border-crtGreen p-4 bg-winGray dark:bg-crtDark">
+            <div class="text-xs font-bold uppercase mb-2 text-black dark:text-crtGreen flex justify-between">
+                <span>Excavation Target (URL)</span>
+                <span class="text-gray-600 dark:text-crtAmber">[AWS Lambda Powered]</span>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input id="urlInput" type="text" value="https://news.ycombinator.com" placeholder="https://example.com"
+                    class="win95-inset dark:border dark:border-crtGreen flex-1 px-3 py-2 text-sm bg-white dark:bg-black text-black dark:text-crtGreen focus:outline-none">
+                <button id="scanBtn"
+                    class="px-5 py-2 font-bold uppercase tracking-wider text-xs bg-blue-800 text-white dark:bg-crtGreen dark:text-black hover:opacity-90 active:scale-95 transition">
+                    ▶ Excavate
+                </button>
+            </div>
+        </section>
+
+        <!-- Telemetry Cards -->
+        <section id="telemetrySection"
+            class="hidden win95-box dark:border-2 dark:border-crtGreen p-4 bg-winGray dark:bg-crtDark">
+            <div
+                class="text-xs font-bold uppercase mb-3 text-black dark:text-crtAmber flex items-center justify-between border-b pb-1 border-current">
+                <span>📟 Artifact Telemetry & Dial-Up Simulation</span>
+                <span id="modernLatency" class="text-gray-600 dark:text-green-400">RTT: 0ms</span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-xs">
+                <div class="win95-inset dark:border dark:border-green-900 p-2 bg-white dark:bg-black">
+                    <div class="text-gray-600 dark:text-gray-400">Modern Size</div>
+                    <div id="rawSize" class="text-base font-bold mt-1 text-black dark:text-crtGreen">0 KB</div>
+                </div>
+                <div class="win95-inset dark:border dark:border-green-900 p-2 bg-white dark:bg-black">
+                    <div class="text-gray-600 dark:text-gray-400">Clean Artifact</div>
+                    <div id="cleanSize" class="text-base font-bold mt-1 text-black dark:text-crtGreen">0 KB</div>
+                </div>
+                <div class="win95-inset dark:border dark:border-green-900 p-2 bg-white dark:bg-black">
+                    <div class="text-gray-600 dark:text-gray-400">Bloat Stripped</div>
+                    <div id="reduction" class="text-base font-bold mt-1 text-blue-700 dark:text-crtAmber">0%</div>
+                </div>
+                <div class="win95-inset dark:border dark:border-green-900 p-2 bg-white dark:bg-black">
+                    <div class="text-gray-600 dark:text-gray-400">1996 56k Speed</div>
+                    <div id="dialup56k" class="text-base font-bold mt-1 text-red-600 dark:text-crtGreen">0s</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Artifact Viewport Frame -->
+        <main
+            class="win95-box dark:border-2 dark:border-crtGreen bg-white dark:bg-black p-4 relative overflow-hidden crt-scanlines min-h-[380px]">
+            <div id="statusBanner" class="text-center py-20 text-xs text-gray-500 dark:text-green-700">
+                [ SYSTEM IDLE ]<br>Enter any modern website URL above to resurrect its semantic artifact.
+            </div>
+            <div id="artifactViewport" class="hidden text-xs md:text-sm leading-relaxed space-y-3"></div>
+        </main>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
