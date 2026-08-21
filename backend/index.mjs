@@ -1,14 +1,13 @@
-// index.mjs (AWS Lambda Handler with DynamoDB Persistence)
-
+// index.mjs (AWS Lambda Handler - Resilient with DynamoDB Fallback)
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
-const ddbClient = new DynamoDBClient({});
+// Explicitly inherit region from Lambda environment
+const ddbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 const docClient = DynamoDBDocumentClient.from(ddbClient);
 const TABLE_NAME = "ChronoGhostArtifacts";
 
 export const handler = async (event) => {
-  // Only set Content-Type; AWS Lambda Function URL handles CORS headers automatically
   const responseHeaders = {
     "Content-Type": "application/json"
   };
@@ -22,9 +21,12 @@ export const handler = async (event) => {
   }
 
   try {
-    const body = event.body ? (typeof event.body === "string" ? JSON.parse(event.body) : event.body) : {};
+    let body = {};
+    if (event.body) {
+      body = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+    }
+    
     let targetUrl = body.url;
-
     if (!targetUrl) {
       return { 
         statusCode: 400, 
@@ -82,13 +84,12 @@ export const handler = async (event) => {
     const cleanSizeBytes = Buffer.byteLength(sanitizedHtml, "utf8");
     const weightReductionPercent = Math.max(0, Math.round(((rawSizeBytes - cleanSizeBytes) / rawSizeBytes) * 100));
 
-    // Telemetry calculations (56 kbps = 7 KB/s)
     const dialup56kSec = (rawSizeBytes / (7 * 1024)).toFixed(2);
     const clean56kSec = (cleanSizeBytes / (7 * 1024)).toFixed(2);
     const timestamp = Date.now();
 
-    // Persist snapshot record to Amazon DynamoDB
-    let dbPersisted = false;
+    // Safe DynamoDB write: failures logged to CloudWatch without crashing user response
+    let dbSaved = false;
     try {
       await docClient.send(new PutCommand({
         TableName: TABLE_NAME,
@@ -102,9 +103,9 @@ export const handler = async (event) => {
           modernLatencyMs: modernLatencyMs
         }
       }));
-      dbPersisted = true;
-    } catch (dbError) {
-      console.warn("DynamoDB save skipped/failed:", dbError.message);
+      dbSaved = true;
+    } catch (dbErr) {
+      console.warn("DynamoDB save skipped:", dbErr.message);
     }
 
     return {
@@ -121,7 +122,7 @@ export const handler = async (event) => {
           modernLatencyMs,
           dialup56kSec,
           clean56kSec,
-          persistedToDynamoDB: dbPersisted
+          persistedToDynamoDB: dbSaved
         }
       })
     };
